@@ -42,7 +42,7 @@ typedef struct node
 
 int display_op(void);
 
-Node* makeNode(Record nData);
+Node* makeNode(char nArtist, char nAlbum, char nSong, char nGenre, int min, int sec, int played, int rated);
 
 void display(Node* pRecord);
 

@@ -6,52 +6,56 @@ int display_op(void)
 {
 	
 
-	int option = 0;
+int option = 0;
 	
-	do {
+	
 
 		system("cls");
 
 
 		printf("---------Operaions---------\n\n");
-		printf("please enter command with corrasponding number.\n"
-			"(1)   load\n"
-			"(2)   store\n"
-			"(3)   display\n"
-			"(4)   insert\n"
-			"(5)   delete\n"
-			"(6)   edit\n"
-			"(7)   sort\n"
-			"(8)   rate\n"
-			"(9)   play\n"
-			"(10) shuffle\n"
-			"(11) exit\n");
-		scanf("%d\n", &option);
-		system("cls");
+		printf("please enter command .\n");
+		printf("(1) Load\n");
+		printf("(2) Store\n");
+		printf("(3) Display\n");
+		printf("(4) Insert\n");
+		printf("(5) Delete\n");
+		printf("(6) Edit\n");
+		printf("(7) Sort\n");
+		printf("(8) Rate\n");
+		printf("(9) Play\n");
+		printf("(10) Shuffle\n");
+		printf("(11) Exit\n");
+	scanf("%d", &option);
+		
 
-
-	} 
-	while (option != 11);
-	{
-		system("cls");
-		return option;
-	}
-
+	
+	return option;
 }
 
 
 
-Node* makeNode(Record nNode)
+Node* makeNode(char nArtist, char nAlbum, char nSong, char nGenre, int min, int sec, int played, int rated)
 {
 	Node* pMem = NULL;
 
 	pMem = (Node*)malloc(sizeof(Node));
 
-	if (pMem)
+	if (pMem!=NULL)
 	{
+
+		strcpy(pMem->data.album, nAlbum);
+		strcpy(pMem->data.artist, nArtist);
+		strcpy(pMem->data.song, nSong);
+		strcpy(pMem->data.genre, nGenre);
+		pMem->data.song_length.min = min;
+		pMem->data.song_length.sec = sec;
+		pMem->data.played = played;
+		pMem->data.rating = rated;
+
+
 		pMem->pNext = NULL;
 		pMem->pPrev = NULL;
-		memcpy(&pMem->data, &nNode, sizeof(Record));
 
 
 	}
@@ -69,10 +73,10 @@ void display(Node* pRecord)
 	Node* temp = NULL;
 	temp = pRecord;
 
-	printf("Enter list for list of artists or just artist's name");
+	printf("Enter list or just artist's name");
 	scanf("%s", &artist);
 
-	if (strcmp(artist, "list") == 0) {
+	if (strcmp(artist, "list"))  {
 
 		while (temp != NULL)
 		{
@@ -133,60 +137,51 @@ void display(Node* pRecord)
 
 void load(Node** pRecord, FILE* infile)
 {
-	char line[100] = "", artist[50] = "",* data;
-	Record temp = { '\0' };
-	Node* pMem = NULL, * pCur = NULL, * pPrev = NULL;
-
 	infile = fopen("musicPlayList.csv", "r");
 
+	char line[100] = "";
+	char artist[50] = "",album[50] = "", song[50] = "", genre[50] = "", time[50] = "";
+	int min=0, sec=0, play=0, rating = 0;
+	Node* pMem = NULL, * pPrev = NULL;
+	
+	
 
 	if (infile != NULL)
 	{
-		fgets(line, 100, infile);
-
+		pRecord=fgets(line, 100, infile);
+		
 		while (!feof(infile))
 		{
 			strcpy(artist, strtok(line, "\""));
+			strcpy(album, strtok(NULL, ","));
+			strcpy(song, strtok(NULL, ","));
+			strcpy(genre, strtok(NULL, ","));
+			strcpy(time, strtok(NULL, ","));
+			play = atoi(strtok(NULL, ","));
+			rating = atoi(strtok(NULL, ","));
+			min = atoi(strtok(time, ":"));
+			sec = atoi(strtok(NULL, ","));
+			
 
-			if (strlen(artist) > 50)
-			{
-				strcpy(artist, strtok(line, ","));
-			}
-
-			data = strtok(NULL, ",");
-			strcpy(temp.album, data);
-			data = strtok(NULL, ",");
-			strcpy(temp.song, data);
-			data = strtok(NULL, ",");
-			strcpy(temp.genre, data);
-			data = strtok(NULL, ":");
-			temp.song_length.min = atoi(data);
-			data = strtok(NULL, ",");
-			temp.song_length.sec = atoi(data);
-			data = strtok(NULL, ",");
-			temp.played = atoi(data);
-			data = strtok(NULL, "\n");
-			temp.rating = atoi(data);
-
-			pMem = makeNode(temp, data);
+			pMem = makeNode(artist, album, song, genre, min, sec, play, rating);
 
 		}
-		// code from Andy O'Fallon's function insertatFront
+		//Andy function insert
 		if (pMem != NULL)
 		{
-			pMem->pNext = *pRecord; // or = pCur
-								  // Is the list empty?
-			if (*pRecord != NULL) // no
+			pMem->pNext = *pRecord;
+								
+			if (*pRecord != NULL) 
 			{
 				(*pRecord)->pPrev = pMem;
 			}
-			else // yes
+			else 
 			{
-				// nothing else to be done!
+				
 			}
 			*pRecord = pMem;
 		}
-		fgets(line, 100, infile);
+		
 	}
 	else
 	{
@@ -194,19 +189,22 @@ void load(Node** pRecord, FILE* infile)
 	}
 
 	fclose(infile);
+	return pMem;
+
+	
 }
 
 
 void store(Node* pRecord, FILE* outfile)
 {
-	Node* pMem = NULL;
+	Node* pMem = pRecord;
 
 	outfile = fopen("musicPlayList.csv", "w");
 
-	pMem = pRecord;
+	
 
-	if (outfile != NULL)
-	{
+	
+	
 		while (pMem != NULL)
 		{
 
@@ -220,9 +218,8 @@ void store(Node* pRecord, FILE* outfile)
 
 			pMem = pMem->pNext;
 		}
-		printf("files loaded");
-	}
-	else
+	
+	if (outfile == NULL)
 	{
 		printf("Error opening file");
 	}
